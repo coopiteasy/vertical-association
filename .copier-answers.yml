@@ -1,0 +1,19 @@
+# Do NOT update manually; changes here will be overwritten by Copier
+_commit: v1.7.0
+_src_path: /Users/robinkeunen/dev/oca-addons-repo-template
+ci: GitHub
+dependency_installation_mode: PIP
+generate_requirements_txt: true
+include_wkhtmltopdf: false
+odoo_version: 16.0
+org_name: Odoo Community Association (OCA)
+org_slug: OCA
+rebel_module_groups: []
+repo_description: The modules in this repository extend membership module to manage
+    associations.
+repo_name: Vertical Association
+repo_slug: vertical-association
+repo_website: https://github.com/OCA/vertical-association
+travis_apt_packages: []
+travis_apt_sources: []
+
