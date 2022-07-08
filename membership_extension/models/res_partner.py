@@ -41,6 +41,7 @@ class ResPartner(models.Model):
         readonly=True,
         store=True,
         compute="_compute_membership_date",
+        recursive=True,
         help="Date from which membership becomes active.",
     )
     membership_last_start = fields.Date(
@@ -48,6 +49,7 @@ class ResPartner(models.Model):
         readonly=True,
         store=True,
         compute="_compute_membership_date",
+        recursive=True,
         help="Start date of last membership period.",
     )
     membership_stop = fields.Date(
@@ -55,6 +57,7 @@ class ResPartner(models.Model):
         readonly=True,
         store=True,
         compute="_compute_membership_date",
+        recursive=True,
         help="Date until which membership remains active.",
     )
     membership_cancel = fields.Date(
@@ -62,6 +65,7 @@ class ResPartner(models.Model):
         readonly=True,
         store=True,
         compute="_compute_membership_date",
+        recursive=True,
         help="Date on which membership has been cancelled.",
     )
     membership_category_ids = fields.Many2many(
@@ -70,6 +74,7 @@ class ResPartner(models.Model):
         store=True,
         comodel_name="membership.membership_category",
         compute="_compute_membership_state",
+        recursive=True,
     )
     membership_categories = fields.Char(
         string="Membership Categories",
@@ -77,9 +82,10 @@ class ResPartner(models.Model):
         store=True,
         index=True,
         compute="_compute_membership_state",
+        recursive=True,
     )
     membership_state = fields.Selection(
-        selection=STATE, store=True, index=True, compute="_compute_membership_state"
+        selection=STATE, store=True, index=True, compute="_compute_membership_state", recursive=True,
     )
 
     @api.model

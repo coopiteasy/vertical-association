@@ -13,7 +13,7 @@ from odoo.tests import common
 from odoo.tools import mute_logger
 
 
-class TestMembership(common.SavepointCase):
+class TestMembership(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -44,6 +44,7 @@ class TestMembership(common.SavepointCase):
         cls.bank_journal = cls.env["account.journal"].create(
             {"name": "Test bank journal", "code": "TB", "type": "bank"}
         )
+        cls.inbound_payment_method_line = cls.bank_journal.inbound_payment_method_line_ids[0]
         cls.account_partner_type = cls.env["account.account.type"].create(
             {
                 "name": "Test partner account type",
@@ -318,9 +319,7 @@ class TestMembership(common.SavepointCase):
             {
                 "amount": invoice.amount_total,
                 "journal_id": self.bank_journal.id,
-                "payment_method_id": self.env.ref(
-                    "account.account_payment_method_manual_in"
-                ).id,
+                "payment_method_line_id": self.inbound_payment_method_line.id,
             }
         )._create_payments()
 
@@ -344,9 +343,7 @@ class TestMembership(common.SavepointCase):
             {
                 "amount": invoice.amount_total,
                 "journal_id": self.bank_journal.id,
-                "payment_method_id": self.env.ref(
-                    "account.account_payment_method_manual_in"
-                ).id,
+                "payment_method_line_id": self.inbound_payment_method_line.id,
             }
         )._create_payments()
         self.assertEqual("paid", line.state)
@@ -358,6 +355,7 @@ class TestMembership(common.SavepointCase):
             .create(
                 {
                     "date": fields.Date.today(),
+                    "journal_id": invoice.journal_id.id,
                     "reason": "no reason",
                     "refund_method": "cancel",
                 }
