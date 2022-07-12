@@ -40,7 +40,6 @@ class ProductTemplate(models.Model):
     membership_type = fields.Selection(
         selection=[("fixed", "Fixed dates"), ("variable", "Variable periods")],
         default="fixed",
-        string="Membership type",
         required=True,
     )
     membership_interval_qty = fields.Integer(string="Interval quantity", default=1)
@@ -60,10 +59,15 @@ class ProductTemplate(models.Model):
             vals["membership_date_from"] = vals["membership_date_to"] = False
         return vals
 
-    @api.model
-    def create(self, vals):
-        self._correct_vals_membership_type(vals, vals.get("membership_type", "fixed"))
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        fixed_vals_list = []
+        for vals in vals_list:
+            fixed_vals = vals.copy()
+            membership_type = fixed_vals.get("membership_type", "fixed")
+            fixed_vals = self._correct_vals_membership_type(fixed_vals, membership_type)
+            fixed_vals_list.append(fixed_vals)
+        return super().create(fixed_vals_list)
 
     def write(self, vals):
         if not vals.get("membership_type"):
