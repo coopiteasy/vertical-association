@@ -77,7 +77,6 @@ class ResPartner(models.Model):
         recursive=True,
     )
     membership_categories = fields.Char(
-        string="Membership Categories",
         readonly=True,
         store=True,
         index=True,
