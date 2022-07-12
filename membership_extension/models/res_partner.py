@@ -85,7 +85,11 @@ class ResPartner(models.Model):
         recursive=True,
     )
     membership_state = fields.Selection(
-        selection=STATE, store=True, index=True, compute="_compute_membership_state", recursive=True,
+        selection=STATE,
+        store=True,
+        index=True,
+        compute="_compute_membership_state",
+        recursive=True,
     )
 
     @api.model
