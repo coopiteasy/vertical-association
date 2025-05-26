@@ -12,20 +12,29 @@ from odoo import api, fields, models
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
-    def _prepare_membership_line(self, move, product, price_unit, line_id, qty=1.0):
+    def _prepare_membership_line(self, move, product, price_unit, line, qty=1.0):
         qty = int(math.ceil(qty))
-        date_from = move.invoice_date or fields.Date.today()
+        partner = (
+            line._get_partner_for_membership()
+            if hasattr(line, "_get_partner_for_membership")
+            else move.partner_id
+        )
+        date_from = (
+            partner.get_membership_renewal_date(product)
+            or move.invoice_date
+            or fields.Date.today()
+        )
         date_to = product.product_tmpl_id._get_next_date(date_from, qty=qty)
         date_to = date_to and (date_to - timedelta(days=1)) or False
         return {
-            "partner": move.partner_id.id,
+            "partner": partner.id,
             "membership_id": product.id,
             "member_price": price_unit,
             "date": move.invoice_date or fields.Date.today(),
             "date_from": date_from,
             "date_to": date_to,
             "state": "waiting",
-            "account_invoice_line": line_id,
+            "account_invoice_line": line.id,
         }
 
     @api.model
@@ -56,7 +65,7 @@ class AccountMoveLine(models.Model):
                     quantity = float(vals.get("quantity", line.quantity))
                     price_unit = vals.get("price_unit", line.price_unit)
                     membership_vals = self._prepare_membership_line(
-                        move, product, price_unit, line.id, qty=quantity
+                        move, product, price_unit, line, qty=quantity
                     )
                     if line.membership_lines:
                         if len(line.membership_lines) > 1:  # pragma: no cover
@@ -81,7 +90,7 @@ class AccountMoveLine(models.Model):
         ):
             qty = float(line.quantity)
             membership_vals = self._prepare_membership_line(
-                line.move_id, line.product_id, line.price_unit, line.id, qty=qty
+                line.move_id, line.product_id, line.price_unit, line, qty=qty
             )
             # There's already the super line
             line.membership_lines[0].write(membership_vals)
