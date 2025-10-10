@@ -396,6 +396,25 @@ class TestMembership(common.TransactionCase):
         self.env["res.partner"]._cron_update_membership()
         self.assertEqual(self.partner.membership_state, "none")
 
+    def test_check_membership_enablement(self):
+        with freeze_time("2023-04-04"):
+            self.env["membership.membership_line"].create(
+                {
+                    "membership_id": self.gold_product.id,
+                    "member_price": 100.00,
+                    "date": "2023-04-04",
+                    "date_from": "2023-04-05",
+                    "date_to": "2024-04-05",
+                    "partner": self.partner.id,
+                    "state": "paid",
+                }
+            )
+            self.env["res.partner"]._cron_update_membership()
+            self.assertEqual(self.partner.membership_state, "waiting")
+        with freeze_time("2023-04-05"):
+            self.env["res.partner"]._cron_update_membership()
+            self.assertEqual(self.partner.membership_state, "paid")
+
     @mute_logger("odoo.sql_db")
     def test_unlink(self):
         self.env["membership.membership_line"].create(
