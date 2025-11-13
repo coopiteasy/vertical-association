@@ -141,12 +141,12 @@ class TestMembership(common.TransactionCase):
         self.assertEqual(self.yesterday, self.child.membership_stop)
         self.assertEqual(self.yesterday, self.child.membership_cancel)
         line.write({"state": "canceled"})
-        self.assertEqual("none", self.partner.membership_state)
+        self.assertEqual("old", self.partner.membership_state)
         self.assertFalse(self.partner.membership_start)
         self.assertFalse(self.partner.membership_last_start)
         self.assertFalse(self.partner.membership_stop)
         self.assertEqual(self.yesterday, self.partner.membership_cancel)
-        self.assertEqual("none", self.child.membership_state)
+        self.assertEqual("old", self.child.membership_state)
         self.assertFalse(self.child.membership_start)
         self.assertFalse(self.child.membership_last_start)
         self.assertFalse(self.child.membership_stop)
@@ -183,6 +183,20 @@ class TestMembership(common.TransactionCase):
         self.assertEqual(fields.Date.today(), self.child.membership_last_start)
         self.assertEqual(self.next_two_months, self.child.membership_stop)
         self.assertEqual(self.yesterday, self.child.membership_cancel)
+        other_line.unlink()
+        self.assertEqual("old", self.partner.membership_state)
+        self.env["membership.membership_line"].create(
+            {
+                "membership_id": self.silver_product.id,
+                "member_price": 100.00,
+                "date": fields.Date.today(),
+                "date_from": None,
+                "date_to": self.next_two_months,
+                "partner": self.partner.id,
+                "state": "paid",
+            }
+        )
+        self.assertEqual("paid", self.partner.membership_state)
         self.partner.free_member = True
         self.assertEqual("free", self.child.membership_state)
 
@@ -378,7 +392,7 @@ class TestMembership(common.TransactionCase):
             }
         )
         self.env["res.partner"]._cron_update_membership()
-        self.assertEqual(self.partner.membership_state, "none")
+        self.assertEqual(self.partner.membership_state, "old")
 
     @mute_logger("odoo.sql_db")
     def test_unlink(self):
